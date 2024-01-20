@@ -13,7 +13,8 @@ const setupDatabase = () => {
             db.run(`CREATE TABLE IF NOT EXISTS users(
                 id uuid NOT NULL UNIQUE,
                 username VARCHAR NOT NULL UNIQUE,
-                password NVARCHAR NOT NULL
+                password NVARCHAR NOT NULL,
+                visitor_id NVARCHAR NOT NULL
             );`, function (err) {
                 if (err) {
                     reject(`Failed to create database\n ${err}`)
