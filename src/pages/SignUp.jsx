@@ -6,10 +6,10 @@ import { AuthContext } from '../auth/AuthContext'
 const SignUp = () => {
     const { userData, setUserData, signIn, VisitorData } = useContext(AuthContext)
     const navigate = useNavigate()
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         const { data, error, isLoading } = VisitorData
-        console.log(data, error, isLoading)
         const res = await httpPost('/users/add', {
             fpjsVisitor: data,
             ...userData

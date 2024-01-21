@@ -20,27 +20,10 @@ const app = express()
 
 await setupDatabase()
 
-console.log(process.env.SERVER_FPJS_API_KEY)
 const fpjsClient = new FingerprintJsServerApiClient({
     apiKey: process.env.SERVER_FPJS_API_KEY,
     region: Region.AP
 })
-
-// const event = fpjsClient.getEvent()
-
-await (
-    function () {
-        return new Promise((resolve, reject) => {
-            db.all(`select * from users;`, (err, rows) => {
-                if (err) {
-                    reject(`Failed to get data\n ${err}`)
-                }
-                console.log(rows);
-                resolve(rows)
-            })
-        })
-    }
-)();
 
 app.use(cors())
 
@@ -55,10 +38,11 @@ app.post('/users/add', async (req, res) => {
     try {
         const event = await fpjsClient.getEvent(fpjsVisitor.requestId)
         const visitorId = event.products.identification.data.visitorId;
-        // console.log(fpjsVisitor.visitorId)
+
         if (new URL(event.products.identification.data.url).origin !== req.headers["origin"] || fpjsVisitor.visitorId !== visitorId) {
             throw new Error('Bad Request')
         }
+
         await new Promise((resolve, reject) => {
             db.run(`insert into users values($id, $username, $password, $visitorId);`, {
                 $id: crypto.randomUUID(),
@@ -77,7 +61,6 @@ app.post('/users/add', async (req, res) => {
             message: `Inserted user ${req.body.username}`
         })
     } catch (error) {
-        console.log(error)
         res.status(500).json({
             success: false,
             message: `Oops! Failed to sign up.`
@@ -113,6 +96,10 @@ app.post('/users/auth', async (req, res) => {
                 throw new Error('Bad Request')
             }
 
+            if ((Date.now() - event.products.identification.data.timestamp) > 30000) {
+                throw new Error('Invalid request')
+            }
+
             const verified = bcrypt.compareSync(password, resultRow.password)
 
             const validVisitor = await new Promise((resolve, reject) => {
@@ -126,7 +113,6 @@ app.post('/users/auth', async (req, res) => {
                     resolve(row)
                 })
             })
-            console.log(validVisitor)
     
             if (verified && validVisitor) {
                 res.status(200).json({
@@ -141,7 +127,6 @@ app.post('/users/auth', async (req, res) => {
             }
         }
     } catch (error) {
-        console.error(error)
         res.status(500).json({
             success: false,
             message: error.message

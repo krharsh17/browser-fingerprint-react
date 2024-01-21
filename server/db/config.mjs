@@ -21,12 +21,6 @@ const setupDatabase = () => {
                 }
                 resolve()
             })
-            // db.run(`DELETE FROM users;`, function (err) {
-            //     if (err) {
-            //         reject(`Failed to clear users table\n ${err}`)
-            //     }
-            //     resolve()
-            // })
         })
     })
 }

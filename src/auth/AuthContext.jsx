@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useContext, createContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { createContext, useState } from "react";
 import { useVisitorData } from '@fingerprintjs/fingerprintjs-pro-react'
 
 export const AuthContext = createContext();

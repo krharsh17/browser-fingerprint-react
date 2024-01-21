@@ -8,7 +8,6 @@ const Login = () => {
     const { userData, setUserData, signIn, authenticated, VisitorData } = useContext(AuthContext)
 
     useEffect(() => {
-        console.log(`authenticated: `, authenticated)
         if (authenticated) {
             navigate('/dashboard', { replace: true })
         }
@@ -17,7 +16,6 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         const { data, error, isLoading } = VisitorData
-        console.log(data, error, isLoading)
         const res = await httpPost('/users/auth', {
             fpjsVisitor: data,
             ...userData
