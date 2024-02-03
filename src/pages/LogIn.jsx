@@ -11,7 +11,7 @@ const Login = () => {
         if (authenticated) {
             navigate('/dashboard', { replace: true })
         }
-    }, [])
+    }, [authenticated, navigate])
 
     const handleSubmit = async (e) => {
         e.preventDefault()

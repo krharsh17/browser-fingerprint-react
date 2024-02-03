@@ -4,8 +4,10 @@ function App() {
   return (
     <main>
       <h1>Authentication</h1>
-      <Link to={'/signup'}>Sign Up</Link>
-      <Link to={'/login'}>Log In</Link>      
+      <section className="links">
+        <Link to={'/signup'}>Sign Up</Link>
+        <Link to={'/login'}>Log In</Link>      
+      </section>
     </main>
   )
 }

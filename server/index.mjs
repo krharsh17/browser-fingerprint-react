@@ -43,6 +43,21 @@ app.post('/users/add', async (req, res) => {
             throw new Error('Bad Request')
         }
 
+        const userAlreadyExists = await new Promise((resolve, reject) => {
+            db.get(`select username from users where visitor_id = $visitorId;`, {
+                $visitorId: visitorId 
+            }, function (err, row) {
+                if (err) {
+                    reject(err)
+                }
+                resolve(row)
+            })
+        })
+
+        if (userAlreadyExists) {
+            throw new Error('User already exists!');
+        }
+
         await new Promise((resolve, reject) => {
             db.run(`insert into users values($id, $username, $password, $visitorId);`, {
                 $id: crypto.randomUUID(),
@@ -61,6 +76,7 @@ app.post('/users/add', async (req, res) => {
             message: `Inserted user ${req.body.username}`
         })
     } catch (error) {
+        console.log(error)
         res.status(500).json({
             success: false,
             message: `Oops! Failed to sign up.`
