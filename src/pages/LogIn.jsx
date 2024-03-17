@@ -5,7 +5,7 @@ import { AuthContext } from '../auth/AuthContext'
 
 const Login = () => {
     const navigate = useNavigate()
-    const { userData, setUserData, signIn, authenticated, VisitorData } = useContext(AuthContext)
+    const { userData, setUserData, signIn, authenticated, visitorData } = useContext(AuthContext)
 
     useEffect(() => {
         if (authenticated) {
@@ -15,7 +15,7 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        const { data, error, isLoading } = VisitorData
+        const { data, error, isLoading } = visitorData
         const res = await httpPost('/users/auth', {
             fpjsVisitor: data,
             ...userData

@@ -25,14 +25,14 @@ const AuthProvider = ({ children }) => {
         setAuthenticated(prev => false)
     }
 
-    const VisitorData = useVisitorData({
+    const visitorData = useVisitorData({
         extendedResult: true
     }, {
         immediate: true
     })
 
     return (
-        <AuthContext.Provider value={{ userData, setUserData, authenticated, signIn, signOut, VisitorData }}>
+        <AuthContext.Provider value={{ userData, setUserData, authenticated, signIn, signOut, visitorData }}>
             {children}
         </AuthContext.Provider>
     );

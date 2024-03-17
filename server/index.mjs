@@ -22,7 +22,7 @@ await setupDatabase()
 
 const fpjsClient = new FingerprintJsServerApiClient({
     apiKey: process.env.SERVER_FPJS_API_KEY,
-    region: Region.AP
+    region: process.env.FPJS_REGION
 })
 
 app.use(cors())

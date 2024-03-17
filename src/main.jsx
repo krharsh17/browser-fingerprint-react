@@ -35,7 +35,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <FpjsProvider loadOptions={
       {
         apiKey: import.meta.env.VITE_FPJS_API_KEY,
-        region: "ap"
+        region: import.meta.env.VITE_FPJS_REGION
       }
     }>
       <AuthProvider>

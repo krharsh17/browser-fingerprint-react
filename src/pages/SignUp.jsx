@@ -4,12 +4,12 @@ import { useContext } from 'react'
 import { AuthContext } from '../auth/AuthContext'
 
 const SignUp = () => {
-    const { userData, setUserData, signIn, VisitorData } = useContext(AuthContext)
+    const { userData, setUserData, signIn, visitorData } = useContext(AuthContext)
     const navigate = useNavigate()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        const { data, error, isLoading } = VisitorData
+        const { data, error, isLoading } = visitorData
         const res = await httpPost('/users/add', {
             fpjsVisitor: data,
             ...userData

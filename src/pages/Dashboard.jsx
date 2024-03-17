@@ -4,7 +4,7 @@ import { AuthContext } from '../auth/AuthContext'
 
 const Dashboard = () => {
     const navigate = useNavigate()
-    const { userData, setUserData, signIn, authenticated, VisitorData } = useContext(AuthContext)
+    const { userData, setUserData, signIn, authenticated, visitorData } = useContext(AuthContext)
 
     if (!authenticated) {
         navigate('/login', { replace: true })
