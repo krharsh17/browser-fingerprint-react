@@ -14,7 +14,7 @@ import {
     Region,
 } from '@fingerprintjs/fingerprintjs-pro-server-api'
 
-configDotenv({path: new URL('../.env', import.meta.url)})
+configDotenv({ path: new URL('../.env', import.meta.url) })
 
 const app = express()
 
@@ -25,6 +25,8 @@ const fpjsClient = new FingerprintJsServerApiClient({
     region: process.env.FPJS_REGION
 })
 
+const allowedOrigins = ['http://localhost:3000'];
+
 app.use(cors())
 
 app.use(bodyParser.json())
@@ -34,18 +36,27 @@ app.post('/users/add', async (req, res) => {
     const hash = bcrypt.hashSync(req.body.password, 5);
 
     const fpjsVisitor = req.body.fpjsVisitor
-    
+
     try {
         const event = await fpjsClient.getEvent(fpjsVisitor.requestId)
         const visitorId = event.products.identification.data.visitorId;
+        const visitorOrigin = new URL(event.products.identification.data.url).origin;
 
-        if (new URL(event.products.identification.data.url).origin !== req.headers["origin"] || fpjsVisitor.visitorId !== visitorId) {
-            throw new Error('Bad Request')
+        if (fpjsVisitor.visitorId !== visitorId) {
+            throw new Error('Tampered Visitor ID')
+        }
+
+        if (
+            !(visitorOrigin === req.headers['origin'] &&
+            allowedOrigins.includes(visitorOrigin) &&
+            allowedOrigins.includes(req.headers['origin']))
+        ) {
+            throw new Error('Invalid origin!')
         }
 
         const userAlreadyExists = await new Promise((resolve, reject) => {
             db.get(`select username from users where visitor_id = $visitorId;`, {
-                $visitorId: visitorId 
+                $visitorId: visitorId
             }, function (err, row) {
                 if (err) {
                     reject(err)
@@ -55,7 +66,21 @@ app.post('/users/add', async (req, res) => {
         })
 
         if (userAlreadyExists) {
-            throw new Error('User already exists!');
+            console.warn('User already exists!');
+            const usernameExists = await new Promise((resolve, reject) => {
+                db.get(`select * from users where username = $username;`, {
+                    $username: userAlreadyExists.username
+                }, function (err, row) {
+                    if (err) {
+                        reject(err)
+                    }
+                    resolve(row)
+                })
+            })
+
+            if (usernameExists) {
+                throw new Error('User with this username already exists!');
+            }
         }
 
         await new Promise((resolve, reject) => {
@@ -89,7 +114,7 @@ app.post('/users/auth', async (req, res) => {
     try {
         const resultRow = await new Promise((resolve, reject) => {
             db.get(`select username, password from users where username = $username;`, {
-                $username: username 
+                $username: username
             }, function (err, row) {
                 if (err) {
                     reject(err)
@@ -107,9 +132,18 @@ app.post('/users/auth', async (req, res) => {
             const fpjsVisitor = req.body.fpjsVisitor
             const event = await fpjsClient.getEvent(fpjsVisitor.requestId)
             const visitorId = event.products.identification.data.visitorId;
+            const visitorOrigin = new URL(event.products.identification.data.url).origin
 
-            if (new URL(event.products.identification.data.url).origin !== req.headers["origin"] || fpjsVisitor.visitorId !== visitorId) {
-                throw new Error('Bad Request')
+            if (fpjsVisitor.visitorId !== visitorId) {
+                throw new Error('Tampered Visitor ID')
+            }
+
+            if (
+                !(visitorOrigin === req.headers['origin'] &&
+                allowedOrigins.includes(visitorOrigin) &&
+                allowedOrigins.includes(req.headers['origin']))
+            ) {
+                throw new Error('Invalid origin!')
             }
 
             if ((Date.now() - event.products.identification.data.timestamp) > 30000) {
@@ -129,12 +163,20 @@ app.post('/users/auth', async (req, res) => {
                     resolve(row)
                 })
             })
-    
-            if (verified && validVisitor) {
-                res.status(200).json({
-                    success: true,
-                    message: `Logged in as ${req.body.username}`
-                })
+
+            if (verified) {
+                if (validVisitor) {
+                    res.status(200).json({
+                        success: true,
+                        message: `Logged in as ${req.body.username}`
+                    })
+                } else {
+                    // some additional auth checks, for example: sending a login link to email
+                    res.status(200).json({
+                        success: true,
+                        message: `Logged in as ${req.body.username}`
+                    })
+                }
             } else {
                 res.status(500).json({
                     success: false,
