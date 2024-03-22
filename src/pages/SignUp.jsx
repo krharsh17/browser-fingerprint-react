@@ -9,7 +9,7 @@ const SignUp = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        const { data, error, isLoading } = visitorData
+        const { data } = visitorData
         const res = await httpPost('/users/add', {
             fpjsVisitor: data,
             ...userData
